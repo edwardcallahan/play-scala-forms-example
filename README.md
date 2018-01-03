@@ -1,8 +1,7 @@
-# play-scala-forms-example
+# play-scala-forms-select
 
-[![Build Status](https://travis-ci.org/playframework/play-scala-forms-example.svg?branch=2.6.x)](https://travis-ci.org/playframework/play-scala-forms-example)
-
-This example shows form processing and form helper handling under Play 2.6.x.
+This example shows a select in form processing and form helper handling under Play 2.6.x.
+Forked from [play-scala-forms-example](https://github.com/playframework/play-scala-forms-example).
 
 ## How to run
 
