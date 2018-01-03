@@ -1,8 +1,8 @@
-@(widgets: Seq[Widget], form: Form[WidgetForm.Data], postUrl: Call)(implicit request: MessagesRequestHeader)
+@(widgetSizes: Seq[WidgetSize], form: Form[WidgetForm.Data], postUrl: Call)(implicit request: MessagesRequestHeader)
 
   @main("Widgets") {
 
-    <h1>Widgets</h1>
+    <h1>Available Widget Sizes</h1>
 
     @* Flash shows updates to a page *@
     @request.flash.data.map{ case (name, value) =>
@@ -11,11 +11,11 @@
 
     <table>
       <thead>
-        <tr><th>Name</th><th>Price</th>
+        <tr><th>ID</th><th>&nbsp</th><th>Description</th>
       </thead>
       <tbody>
-      @for(w <- widgets) {
-        <tr><td>@w.name</td><td>@w.price</td></tr>
+      @for(w <- widgetSizes) {
+          <tr><td>@w.id</td><td>&nbsp</td><td>@w.description</td></tr>
       }
       </tbody>
     </table>
@@ -32,13 +32,11 @@
     }
 
     @helper.form(postUrl) {
-      @helper.CSRF.formField
-
-      @helper.inputText(form("name"))
-
-      @helper.inputText(form("price"))
-
-      <button>Create widget</button>
-    }
+      @helper.select(
+        field = form("id"),
+        options =  widgetSizes.map(size => size.id -> size.description),
+        '_label -> "Choose a size")
+      <button>Select</button>
+}
 
   }

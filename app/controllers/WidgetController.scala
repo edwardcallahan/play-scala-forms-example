@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import models.Widget
+import models.WidgetSize
 import play.api.data._
 import play.api.i18n._
 import play.api.mvc._
@@ -20,40 +20,42 @@ import play.api.mvc._
 class WidgetController @Inject()(cc: MessagesControllerComponents) extends MessagesAbstractController(cc) {
   import WidgetForm._
 
-  private val widgets = scala.collection.mutable.ArrayBuffer(
-    Widget("Widget 1", 123),
-    Widget("Widget 2", 456),
-    Widget("Widget 3", 789)
+  private val widgetSizes = scala.collection.mutable.ArrayBuffer(
+    WidgetSize("XS", "Extra Small: up to 0.10 mm"),
+    WidgetSize("S", "Small: 0.10 to 0.99 mm"),
+    WidgetSize("M", "Medium: 1.00 to 1.99 mm"),
+    WidgetSize("L", "Large: 2.00 - 3.99 mm"),
+    WidgetSize("XL", "Extra Large: 4.00 mm and up")
   )
 
-  // The URL to the widget.  You can call this directly from the template, but it
+  // The URL to the widget size chooser.
+  //  You can call this directly from the template, but it
   // can be more convenient to leave the template commpletely stateless i.e. all
   // of the "WidgetController" references are inside the .scala file.
-  private val postUrl = routes.WidgetController.createWidget()
+  private val postUrl = routes.WidgetController.selectWidgetSize()
 
   def index = Action {
     Ok(views.html.index())
   }
 
-  def listWidgets = Action { implicit request: MessagesRequest[AnyContent] =>
+  def listWidgetSizes = Action { implicit request: MessagesRequest[AnyContent] =>
     // Pass an unpopulated form to the template
-    Ok(views.html.listWidgets(widgets, form, postUrl))
+    Ok(views.html.selectWidgetSize(widgetSizes, form, postUrl))
   }
 
   // This will be the action that handles our form post
-  def createWidget = Action { implicit request: MessagesRequest[AnyContent] =>
+  def selectWidgetSize = Action { implicit request: MessagesRequest[AnyContent] =>
     val errorFunction = { formWithErrors: Form[Data] =>
       // This is the bad case, where the form had validation errors.
       // Let's show the user the form again, with the errors highlighted.
       // Note how we pass the form with errors to the template.
-      BadRequest(views.html.listWidgets(widgets, formWithErrors, postUrl))
+      BadRequest(views.html.selectWidgetSize(widgetSizes, formWithErrors, postUrl))
     }
 
     val successFunction = { data: Data =>
       // This is the good case, where the form was successfully parsed as a Data.
-      val widget = Widget(name = data.name, price = data.price)
-      widgets.append(widget)
-      Redirect(routes.WidgetController.listWidgets()).flashing("info" -> "Widget added!")
+      val sizeId = data.id
+      Ok(views.html.displaySelection("Success",s"Selected: ${sizeId}"))
     }
 
     val formValidationResult = form.bindFromRequest
