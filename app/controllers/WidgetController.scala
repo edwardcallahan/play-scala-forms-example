@@ -20,12 +20,12 @@ import play.api.mvc._
 class WidgetController @Inject()(cc: MessagesControllerComponents) extends MessagesAbstractController(cc) {
   import WidgetForm._
 
-  private val widgetSizes = scala.collection.mutable.ArrayBuffer(
-    WidgetSize("XS", "Extra Small: up to 0.10 mm"),
-    WidgetSize("S", "Small: 0.10 to 0.99 mm"),
-    WidgetSize("M", "Medium: 1.00 to 1.99 mm"),
-    WidgetSize("L", "Large: 2.00 - 3.99 mm"),
-    WidgetSize("XL", "Extra Large: 4.00 mm and up")
+  private val widgetSizes = scala.collection.immutable.HashMap[String, WidgetSize](
+    "XS" -> WidgetSize("XS", "Extra Small: up to 0.10 mm"),
+    "S" -> WidgetSize("S", "Small: 0.10 to 0.99 mm"),
+    "M" -> WidgetSize("M", "Medium: 1.00 to 1.99 mm"),
+    "L" -> WidgetSize("L", "Large: 2.00 - 3.99 mm"),
+    "XL" -> WidgetSize("XL", "Extra Large: 4.00 mm and up")
   )
 
   // The URL to the widget size chooser.
@@ -40,7 +40,7 @@ class WidgetController @Inject()(cc: MessagesControllerComponents) extends Messa
 
   def listWidgetSizes = Action { implicit request: MessagesRequest[AnyContent] =>
     // Pass an unpopulated form to the template
-    Ok(views.html.selectWidgetSize(widgetSizes, form, postUrl))
+    Ok(views.html.selectWidgetSize(widgetSizes.values.toIndexedSeq, form, postUrl))
   }
 
   // This will be the action that handles our form post
@@ -49,13 +49,14 @@ class WidgetController @Inject()(cc: MessagesControllerComponents) extends Messa
       // This is the bad case, where the form had validation errors.
       // Let's show the user the form again, with the errors highlighted.
       // Note how we pass the form with errors to the template.
-      BadRequest(views.html.selectWidgetSize(widgetSizes, formWithErrors, postUrl))
+      BadRequest(views.html.selectWidgetSize(widgetSizes.values.toIndexedSeq, formWithErrors, postUrl))
     }
 
     val successFunction = { data: Data =>
       // This is the good case, where the form was successfully parsed as a Data.
       val sizeId = data.id
-      Ok(views.html.displaySelection("Success",s"Selected: ${sizeId}"))
+      val sizeDescription = widgetSizes.get(sizeId).get.description
+      Ok(views.html.displaySelection("Success",s"Selected: ${sizeId} ${sizeDescription}"))
     }
 
     val formValidationResult = form.bindFromRequest
