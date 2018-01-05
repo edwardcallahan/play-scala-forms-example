@@ -38,7 +38,8 @@ class WidgetController @Inject()(@Named("processManagerActor") processManagerAct
                                  cc: ControllerComponents)
                                 (implicit system: ActorSystem, mat: Materializer,
                                 ec: ExecutionContext,mcc: MessagesControllerComponents)
-  extends MessagesAbstractController(mcc) {
+  extends MessagesAbstractController(mcc) with SameOriginCheck {
+
   import WidgetForm._
 
   val logger = play.api.Logger(getClass)
@@ -102,15 +103,6 @@ class WidgetController @Inject()(@Named("processManagerActor") processManagerAct
     futureFlow
   }
 
-/*  def monitorWidgetCreation = WebSocket.accept[String, String] { request =>
-  /*  val in = Sink.ignore
-    val out = procMan.test//Source.single("Howdy")
-    Flow.fromSinkAndSource(in, out)*/
-    ActorFlow.actorRef { out =>
-      PprocessManagerActor.props(out)
-    }
-  }*/
-
   // This will be the action that handles our form post
   def selectWidgetSize = Action { implicit request: MessagesRequest[AnyContent] =>
     val errorFunction = { formWithErrors: Form[Data] =>
@@ -130,6 +122,11 @@ class WidgetController @Inject()(@Named("processManagerActor") processManagerAct
     val formValidationResult = form.bindFromRequest
     formValidationResult.fold(errorFunction, successFunction)
   }
+}
+
+  trait SameOriginCheck {
+
+    def logger: Logger
 
     /**
       * Checks that the WebSocket comes from the same origin.  This is necessary to protect
@@ -138,7 +135,7 @@ class WidgetController @Inject()(@Named("processManagerActor") processManagerAct
       * See https://tools.ietf.org/html/rfc6455#section-1.3 and
       * http://blog.dewhurstsecurity.com/2013/08/30/security-testing-html5-websockets.html
       */
-    private def sameOriginCheck(implicit rh: RequestHeader): Boolean = {
+    def sameOriginCheck(implicit rh: RequestHeader): Boolean = {
     // The Origin header is the domain the request originates from.
     // https://tools.ietf.org/html/rfc6454#section-7
     logger.debug("Checking the ORIGIN ")
